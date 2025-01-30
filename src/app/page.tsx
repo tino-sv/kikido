@@ -1,5 +1,5 @@
 "use client";
-import { ClerkProvider, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { SignInButton, SignOutButton } from "@clerk/nextjs";
 
 export default function Home() {
