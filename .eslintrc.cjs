@@ -18,6 +18,7 @@ const config = {
     "@typescript-eslint/no-unescaped-entities": "off",
     "react/no-unescaped-entities": "off",
     "@typescript-eslint/no-unsafe-assignment": "off",
+    "@typescript-eslint/no-unsafe-argument": "off",
     "@typescript-eslint/consistent-type-imports": [
       "warn",
       {
