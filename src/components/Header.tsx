@@ -1,22 +1,23 @@
 "use client";
 
-import Link from "next/link";
-import { useUser, RedirectToSignIn } from "@clerk/nextjs";
+import NavLink from "./NavLink";
+import { SignOutButton } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 
 export default function Header() {
-  const { isSignedIn } = useUser();
+  const { user } = useUser();
 
-  if (!isSignedIn) {
-    return <RedirectToSignIn />;
-  }
 
   return (
-    <header className="w-full py-4 mb-8 bg-gray-800 text-white">
+    <header className="w-full py-4 mb-8 bg-background-light text-text">
       <div className="flex justify-between items-center px-8 mx-auto max-w-7xl">
         <nav className="flex gap-8 text-lg">
-          <Link href="/" className="hover:text-teal-400 transition-colors">Home</Link>
-          <Link href="/todo" className="hover:text-teal-400 transition-colors">Todo App</Link>
-          <Link href="/logout" className="hover:text-teal-400 transition-colors">Logout</Link>
+          <NavLink href="/">Home</NavLink>
+          {user && <NavLink href="/todo">Todo App</NavLink>}
+          {user && <SignOutButton>
+            <button className="text-text hover:text-primary transition-colors">Logout</button>
+          </SignOutButton>}
+          <NavLink href="/about">About</NavLink>
         </nav>
       </div>
     </header>

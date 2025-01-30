@@ -7,6 +7,7 @@ if (!publishableKey) {
 }
 
 export const config = {
+  publicRoutes: ['/'],
   matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
 };
 
