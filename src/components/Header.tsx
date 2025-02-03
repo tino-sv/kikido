@@ -8,19 +8,20 @@ export default function Header() {
   const { user } = useUser();
 
   return (
-    <header className="w-full py-4 mb-8 bg-background-light text-text">
-      <div className="flex justify-between items-center px-8 mx-auto max-w-7xl">
+    <header className="mb-8 w-full bg-background-light py-4 text-text">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-8">
         <nav className="flex gap-8 text-lg">
           <NavLink href="/">Home</NavLink>
           {user && <NavLink href="/todo">Todo App</NavLink>}
-          {user && <NavLink href="/profile">Profile</NavLink>}
           <NavLink href="/about">About</NavLink>
         </nav>
         <div className="flex items-center gap-4">
           {user && <UserButton />}
           {user && (
             <SignOutButton>
-              <button className="text-text hover:text-primary transition-colors">Logout</button>
+              <button className="text-text transition-colors hover:text-primary">
+                Logout
+              </button>
             </SignOutButton>
           )}
         </div>
