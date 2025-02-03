@@ -20,6 +20,7 @@ const config = {
     "@typescript-eslint/consistent-type-imports": "off",
     "@typescript-eslint/no-unused-vars": "off",
     "@typescript-eslint/require-await": "off",
+    "@typescript-eslint/consistent-indexed-object-style": "off",
     "@typescript-eslint/no-misused-promises": [
       "error",
       {
