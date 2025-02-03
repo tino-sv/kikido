@@ -1,10 +1,12 @@
 import { UserProfile } from "@clerk/nextjs";
-import type { NextPage } from "next";
 
-const UserProfilePage: NextPage<{ params: { profile: string } }> = ({
-  params,
-}) => {
+interface PageProps {
+  params: {
+    profile: string[]; // Note: this should be string[] for catch-all routes
+  };
+  searchParams: Record<string, string | string[] | undefined>;
+}
+
+export default async function UserProfilePage({ params }: PageProps) {
   return <UserProfile />;
-};
-
-export default UserProfilePage;
+}
