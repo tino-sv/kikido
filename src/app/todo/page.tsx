@@ -17,13 +17,7 @@ interface Todo {
 
 export default function TodoPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [newTodo, setNewTodo] = useState({
-    text: "",
-    category: "",
-    importanceLevel: "low",
-    date: "",
-    completed: false,
-  })
+
   const { user } = useUser();
   useEffect(() => {
     fetchTodos();
