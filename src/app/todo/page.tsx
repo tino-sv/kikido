@@ -4,8 +4,7 @@ import cat from "@/assets/cat.gif";
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { ReactNode, useState, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import toast styles
+import { Toaster, toast } from "sonner";
 
 interface Todo {
   date: ReactNode;
@@ -18,72 +17,140 @@ interface Todo {
 
 export default function TodoPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [newTodo, setNewTodo] = useState({
+    text: "",
+    category: "",
+    importanceLevel: "low",
+    date: "",
+    completed: false,
+  })
   const { user } = useUser();
-
   useEffect(() => {
-    if (user) {
-      setTodos([]);
-    }
-  }, [user]);
+    fetchTodos();
+  }, []);
+
+  const fetchTodos = async () => {
+    try {
+      const response = await fetch("/api/todos");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setTodos(data);
+    } catch (error) {
+      console.error("Failed to fetch todos:", error);
+      toast.error("Failed to fetch todos.");
+    } 
+  };
+
+
 
   const addTodoWithDate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
     const todoText = form.elements.namedItem("todoText") as HTMLInputElement;
-    const todoCategory = form.elements.namedItem(
-      "todoCategory",
-    ) as HTMLInputElement;
+    const todoCategory = form.elements.namedItem("todoCategory") as HTMLInputElement;
     const todoDate = form.elements.namedItem("todoDate") as HTMLInputElement;
 
     if (!todoCategory || !todoText || !todoDate || !user) return;
 
-    const newTodo = {
-      user_id: user?.id,
+    const newTodoData = {
       text: todoText.value,
       category: todoCategory.value,
+      date: todoDate.value,
+      importanceLevel: "low",
       completed: false,
-      date: todoDate.value
-        ? new Date(todoDate.value).toISOString().split("T")[0]
-        : null,
-      importanceLevel: "1",
+
     };
 
-    const id = generateUniqueId();
-    if (id !== undefined) {
-      const todoWithId: Todo = { ...newTodo, id };
+    try {
+      const response = await fetch("/api/todos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTodoData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       toast.success("Todo added successfully!");
-      setTodos((prev) => [...prev, todoWithId]);
+      fetchTodos(); // Refresh the todo list
       todoText.value = "";
       todoCategory.value = "";
       todoDate.value = "";
-    } else {
-      toast.error("Failed to generate unique ID for the todo.");
+    } catch (error) {
+      console.error("Failed to add todo:", error);
+      toast.error("Failed to add todo.");
     }
   };
 
-  const toggleTodoCompletion = (id: string, completed: boolean) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !completed } : todo,
-      ),
-    );
-    toast.success("Todo updated successfully!");
-  };
 
-  const deleteTodo = (id: string) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
+
+  const toggleTodoCompletion = async (id: string, completed: boolean) => {
+    try {
+      const response = await fetch("/api/todos", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: id, completed: !completed }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      toast.success("Todo updated successfully!");
+      fetchTodos(); // Refresh the todo list
+    } catch (error) {
+      console.error("Failed to update todo:", error);
+      toast.error("Failed to update todo.");
+  };
+};
+
+const deleteTodo = async (id: string) => {
+  try {
+    const response = await fetch("/api/todos", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: id }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     toast.success("Todo deleted successfully!");
-  };
+    fetchTodos(); // Refresh the todo list
+  } catch (error) {
+    console.error("Failed to delete todo:", error);
+    toast.error("Failed to delete todo.");
+  }
+};
 
-  const generateUniqueId = () => {
-    return Math.random().toString(36).substr(2, 9);
-  };
+const formatDate = (dateString: any) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    weekday: "short",
+  });
+}
+
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-text">
       <main className="mx-auto max-w-4xl flex-1 p-6">
         <div className="mb-8 flex items-center gap-4">
-          <Image unoptimized
+          <Image
+            unoptimized
             src={cat}
             alt="Cat Missing camera"
             className="h-24 w-24 rounded-full border-4 border-primary"
@@ -138,7 +205,7 @@ export default function TodoPage() {
                   {todo.category}
                 </span>
                 <span className="animate-fade-in rounded-full bg-primary/20 px-2 py-1 text-text-muted">
-                  {todo.date}
+                  {todo.date ? formatDate(todo.date) : "No date"}
                 </span>
                 <button
                   onClick={() => toggleTodoCompletion(todo.id, todo.completed)}
@@ -157,7 +224,7 @@ export default function TodoPage() {
           </ul>
         )}
       </main>
-      <ToastContainer />
+      <Toaster position="top-right" />
     </div>
   );
 }
