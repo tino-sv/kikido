@@ -20,6 +20,7 @@
     "@clerk/nextjs": "^6.10.4",
     "@clerk/themes": "^2.2.16",
     "@prisma/client": "^6.3.1",
+    "@prisma/extension-accelerate": "^1.2.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.48.1",
     "@t3-oss/env-nextjs": "^0.10.1",
@@ -51,5 +52,4 @@
   "ct3aMetadata": {
     "initVersion": "7.38.1"
   }
-
 }

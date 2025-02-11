@@ -1,12 +1,15 @@
 // src/app/api/todos/route.js
 import { PrismaClient } from "@prisma/client";
+import { withAccelerate } from "@prisma/extension-accelerate";
 import { NextResponse } from "next/server";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient().$extends(withAccelerate());
 
 export async function POST(req: any) {
   try {
     const { text, category, importanceLevel, date } = await req.json();
+
+    console.log(text, category, importanceLevel, date);
 
     // Validation (Importance Level)
     if (!["low", "medium", "high"].includes(importanceLevel)) {
@@ -17,6 +20,8 @@ export async function POST(req: any) {
         { status: 400 },
       );
     }
+
+    console.log(date)
 
     const todo = await prisma.todo.create({
       data: {
@@ -29,7 +34,7 @@ export async function POST(req: any) {
 
     return NextResponse.json(todo, { status: 200 });
   } catch (error) {
-    console.error(error);
+    console.error((error as Error).stack);
     return NextResponse.json(
       { error: "Failed to create todo" },
       { status: 500 },
@@ -42,7 +47,7 @@ export async function GET() {
     const todos = await prisma.todo.findMany();
     return NextResponse.json(todos, { status: 200 });
   } catch (error) {
-    console.error(error);
+    console.error((error as Error).stack);
     return NextResponse.json(
       { error: "Failed to fetch todos" },
       { status: 500 },
@@ -59,7 +64,7 @@ export async function PUT(req: any) {
     });
     return NextResponse.json(todo, { status: 200 });
   } catch (error) {
-    console.error(error);
+    console.error((error as Error).stack);
     return NextResponse.json(
       { error: "Failed to update todo" },
       { status: 500 },
@@ -78,7 +83,7 @@ export async function DELETE(req: any) {
       { status: 200 },
     );
   } catch (error) {
-    console.error(error);
+    console.error((error as Error).stack);
     return NextResponse.json(
       { error: "Failed to delete todo" },
       { status: 500 },
