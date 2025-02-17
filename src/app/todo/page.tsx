@@ -22,61 +22,99 @@ export default function TodoPage() {
 
   useEffect(() => {
     if (user) {
-      setTodos([]);
+      fetchTodos();
     }
   }, [user]);
+
+  const fetchTodos = async () => {
+    try {
+      const response = await fetch('/api/todos');
+      if (!response.ok) throw new Error('Failed to fetch todos');
+      const data = await response.json();
+      setTodos(data);
+    } catch (error) {
+      toast.error('Failed to load todos');
+    }
+  };
 
   const addTodoWithDate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
     const todoText = form.elements.namedItem("todoText") as HTMLInputElement;
-    const todoCategory = form.elements.namedItem(
-      "todoCategory",
-    ) as HTMLInputElement;
+    const todoCategory = form.elements.namedItem("todoCategory") as HTMLInputElement;
     const todoDate = form.elements.namedItem("todoDate") as HTMLInputElement;
 
     if (!todoCategory || !todoText || !todoDate || !user) return;
 
-    const newTodo = {
-      user_id: user?.id,
-      text: todoText.value,
-      category: todoCategory.value,
-      completed: false,
-      date: todoDate.value
-        ? new Date(todoDate.value).toISOString().split("T")[0]
-        : null,
-      importanceLevel: "1",
-    };
+    try {
+      const response = await fetch('/api/todos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: todoText.value,
+          category: todoCategory.value,
+          date: todoDate.value ? new Date(todoDate.value).toISOString() : null,
+          importanceLevel: 'low',
+        }),
+      });
 
-    const id = generateUniqueId();
-    if (id !== undefined) {
-      const todoWithId: Todo = { ...newTodo, id };
+      if (!response.ok) throw new Error('Failed to add todo');
+      
+      const newTodo = await response.json();
       toast.success("Todo added successfully!");
-      setTodos((prev) => [...prev, todoWithId]);
+      setTodos((prev) => [...prev, newTodo]);
+      
+      // Reset form
       todoText.value = "";
       todoCategory.value = "";
       todoDate.value = "";
-    } else {
-      toast.error("Failed to generate unique ID for the todo.");
+    } catch (error) {
+      toast.error("Failed to add todo");
     }
   };
 
-  const toggleTodoCompletion = (id: string, completed: boolean) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !completed } : todo,
-      ),
-    );
-    toast.success("Todo updated successfully!");
+  const toggleTodoCompletion = async (id: string, completed: boolean) => {
+    try {
+      const response = await fetch('/api/todos', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, completed: !completed }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update todo');
+      
+      setTodos((prev) =>
+        prev.map((todo) =>
+          todo.id === id ? { ...todo, completed: !completed } : todo,
+        ),
+      );
+      toast.success("Todo updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update todo");
+    }
   };
 
-  const deleteTodo = (id: string) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
-    toast.success("Todo deleted successfully!");
-  };
+  const deleteTodo = async (id: string) => {
+    try {
+      const response = await fetch('/api/todos', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
 
-  const generateUniqueId = () => {
-    return Math.random().toString(36).substr(2, 9);
+      if (!response.ok) throw new Error('Failed to delete todo');
+      
+      setTodos((prev) => prev.filter((todo) => todo.id !== id));
+      toast.success("Todo deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to delete todo");
+    }
   };
 
   return (
